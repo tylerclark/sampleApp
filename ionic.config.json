@@ -1,0 +1,7 @@
+{
+  "name": "umbrella-app-staging",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
