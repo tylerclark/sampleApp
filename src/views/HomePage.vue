@@ -14,14 +14,27 @@
       </ion-header>
 
       <div id="container">
-        <div v-if="!user">Not Authenticated</div>
+        <div v-if="!user">Not Authenticated<br/>&nbsp;</div>
         <div v-if="user">
-          <p>Authenticated as {{ user.displayName }}</p>
+          <p>
+            Authenticated as
+            <span v-if="user.name">{{ user.name }}</span>
+            <span v-if="!user.name">Unknown</span>
+
+            <div v-if="user.email">({{ user.email }})</div>
+            <div v-if="!user.email">(Unknown)</div>
+          </p>
         </div>
 
-        <div class="ion-margin-top"><ion-button>Login with Google</ion-button></div>
-        <div><ion-button>Login with Apple</ion-button></div>
-        <div><ion-button>Logout</ion-button></div>
+        <div class="ion-margin-top">
+          <ion-button :disabled="user" @click="googleSignin">Login with Google</ion-button>
+        </div>
+        <div>
+          <ion-button :disabled="user" @click="appleSignin">Login with Apple</ion-button>
+        </div>
+        <div>
+          <ion-button :disabled="!user" @click="logout">Logout</ion-button>
+        </div>
       </div>
     </ion-content>
   </ion-page>
@@ -30,11 +43,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton } from "@ionic/vue";
-import { state, googleSignin, appleSignin } from "@/composables/firebase-service";
+import { state, googleSignin, appleSignin, logout } from "@/composables/firebase-service";
 
 const user = computed(() => {
-  console.log("state", state);
-  return state?.user ? state.user : null;
+  return state.userData;
 });
 </script>
 

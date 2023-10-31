@@ -1,24 +1,8 @@
-import { toRefs, reactive, ref } from "vue";
+import { reactive } from "vue";
 
 import { Capacitor } from "@capacitor/core";
 import { getApp, getApps, initializeApp } from "firebase/app";
 
-import {
-  getFirestore,
-  addDoc,
-  doc,
-  deleteDoc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  query,
-  collection,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  onSnapshot,
-} from "firebase/firestore";
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from "firebase/functions";
 import {
   getAuth,
@@ -31,34 +15,29 @@ import {
   fetchSignInMethodsForEmail,
   sendPasswordResetEmail,
   signOut,
-  FacebookAuthProvider,
   GoogleAuthProvider,
   indexedDBLocalPersistence,
   initializeAuth,
   updateProfile,
 } from "firebase/auth";
-// import { getStorage, ref as firebaseRef, getDownloadURL } from 'firebase/storage';
-
-// import { Network } from '@capacitor/network';
-// import { Pet } from './types/pets';
-// import * as Sentry from '@sentry/vue';
 
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBViTc7v2QNNR4gsGtkH9nR9l7e21FvBBc",
-  authDomain: "app.umbrella.vet",
-  projectId: "umbrellavettest",
-  storageBucket: "umbrellavettest_chat_media",
-  messagingSenderId: "95746765505",
-  appId: "1:95746765505:web:07e06915c6c31494cf1a40",
-};
+const app =
+  getApps().length === 0
+    ? initializeApp({
+        apiKey: "AIzaSyCUau57fHwusLPrshfGzz1VuCcKXh6WNHE",
+        authDomain: "app.umbrella.vet",
+        projectId: "umbrella-vet",
+        storageBucket: "umbrella-vet_chat-media",
+        messagingSenderId: "993776523745",
+        appId: "1:993776523745:web:abe8e6e3138ad680709aa0",
+      })
+    : getApps()[0];
+// const db = getFirestore(app);
+// const functions = getFunctions(app);
 
-const app = getApps().length === 0 ? initializeApp(FIREBASE_CONFIG) : getApps()[0];
-const db = getFirestore(app);
-const functions = getFunctions(app);
-
-export const getFirebaseAuth = () => {
+const getFirebaseAuth = () => {
   if (Capacitor.isNativePlatform()) {
     return initializeAuth(getApp(), {
       persistence: indexedDBLocalPersistence,
@@ -70,11 +49,6 @@ export const getFirebaseAuth = () => {
 
 const auth = getFirebaseAuth();
 
-if (Capacitor.isNativePlatform()) {
-  initializeAuth(app, {
-    persistence: indexedDBLocalPersistence,
-  });
-}
 // const storage = getStorage(app);
 
 // const emulatorLocation = 'MY_IP';
@@ -103,74 +77,111 @@ export const state = reactive<TState>({
   subscribed: false,
 });
 
-export const googleSignin = async (isNative: Boolean) => {
-  console.log("googleSignin");
-  console.log("window.location.href", window.location.href);
+export const googleSignin = async () => {
+  console.log("@/composables/firebase-service > googleSignin()");
 
   // 1. Create credentials on the native layer
-  const result = await FirebaseAuthentication.signInWithGoogle({
-    scopes: ["profile", "email"],
-  });
+  const result = await FirebaseAuthentication.signInWithGoogle();
   console.log("google response", result);
   // 2. Sign in on the web layer using the id token
   const credential = GoogleAuthProvider.credential(result.credential?.idToken);
   await signInWithCredential(auth, credential);
-  return result.user;
+
+  // Fixes ----------------------------------------------------
+  if (!state.userData) state.userData = {};
+  if (result.user?.email) {
+    state.userData.email = result.user?.email;
+  } else if (result.additionalUserInfo?.profile?.email) {
+    state.userData.email = result.additionalUserInfo?.profile?.email;
+  } else {
+    state.userData.email = null;
+  }
+  if (result.user?.displayName) {
+    state.userData.name = result.user?.displayName;
+  } else if (result.additionalUserInfo?.profile?.name) {
+    state.userData.name = result.additionalUserInfo?.profile?.name;
+  } else if (result.additionalUserInfo?.profile?.given_name && result.additionalUserInfo?.profile?.family_name) {
+    state.userData.name = `${result.additionalUserInfo?.profile?.given_name} ${result.additionalUserInfo?.profile?.family_name}`;
+  } else {
+    state.userData.name = "Google User";
+  }
+  // ----------------------------------------------------------
+  console.log("state.userData.name", state.userData.name);
+  console.log("state.userData.email", state.userData.email);
+  return result;
 };
 
-// function getAppleDisplayName(providerData: any) {
-//   if (providerData) {
-//     for (let i = 0; i < providerData.length; i++) {
-//       if (providerData[i].providerId === 'apple.com') {
-//         return providerData[i].displayName;
-//       }
-//     }
-//   }
-//   return 'Apple User';
-// }
-
-// async function updateDetails(name: string, email: string | null | undefined) {
-//   const user = auth.currentUser;
-//   if (user) {
-//     const updateUser = httpsCallable(functions, 'updateUserCall');
-//     await updateUser({ name, email });
-//     state.user.email = email;
-//     state.user.displayName = name;
-//     state.user.emailVerified = true;
-//   }
-// }
-
 export const appleSignin = async () => {
-  console.log("appleSignin");
-  console.log("environment", process.env.NODE_ENV);
-  const result = await FirebaseAuthentication.signInWithApple({ skipNativeAuth: false, scopes: ["name", "email"] });
-  console.log("appleSignin:FirebaseAuthentication.signInWithApple()", JSON.stringify(result, null, 2));
+  console.log("@/composables/firebase-service > appleSignin()");
+
+  const result = await FirebaseAuthentication.signInWithApple({
+    skipNativeAuth: true,
+    scopes: ["name", "email"],
+  });
+  console.log(
+    "@/composables/firebase-service > appleSignin() > FirebaseAuthentication.signInWithApple({ skipNativeAuth: false, scopes: ['name','email'] })",
+    result
+  );
   const provider = new OAuthProvider("apple.com");
-  console.log('appleSignin:OAuthProvider("apple.com")', JSON.stringify(provider, null, 2));
   const credential = provider.credential({
     idToken: result.credential?.idToken,
     rawNonce: result.credential?.nonce,
   });
-  console.log("appleSignin:provider.credential", JSON.stringify(credential, null, 2));
-  const signinWith = await signInWithCredential(auth, credential);
-  console.log("appleSignin:signinWithCredential", JSON.stringify(signinWith, null, 2));
-  // const appleName = getAppleDisplayName(result?.user?.providerData);
-  // await updateDetails(appleName, result.user?.email);
+  await signInWithCredential(auth, credential);
+  // Fixes ----------------------------------------------------
+  // Email
+  if (!state.userData) state.userData = {};
+  if (result.user?.email) {
+    state.userData.email = result.user?.email;
+  } else if (result.additionalUserInfo?.profile?.email) {
+    state.userData.email = result.additionalUserInfo?.profile?.email;
+  } else if (result.additionalUserInfo?.profile?.email) {
+    state.userData.email = result.additionalUserInfo?.profile?.email;
+  } else if (result.user?.providerData) {
+    for (let i = 0; i < result.user.providerData.length; i++) {
+      if (result.user.providerData[i].providerId === "apple.com") {
+        state.userData.email = result.user.providerData[i].email;
+      }
+    }
+  } else if (!state.userData.email) {
+    state.userData.email = "Unknown";
+  }
+  // Name
+  if (result.user?.displayName) {
+    state.userData.name = result.user?.displayName;
+  } else if (result.additionalUserInfo?.profile?.name) {
+    state.userData.name = result.additionalUserInfo?.profile?.name;
+  } else if (result.additionalUserInfo?.profile?.given_name && result.additionalUserInfo?.profile?.family_name) {
+    state.userData.name = `${result.additionalUserInfo?.profile?.given_name} ${result.additionalUserInfo?.profile?.family_name}`;
+  } else if (result.user?.providerData) {
+    for (let i = 0; i < result.user.providerData.length; i++) {
+      if (result.user.providerData[i].providerId === "apple.com") {
+        state.userData.name = result.user.providerData[i].displayName;
+      }
+    }
+  } else {
+    state.userData.name = "Apple User";
+  }
+  // ----------------------------------------------------------
+  console.log("state.userData.name", state.userData.name);
+  console.log("state.userData.email", state.userData.email);
   return result;
 };
 
 export const authCheck = async () => {
   console.log("@/composables/firebase-service > authCheck()");
+
   return new Promise(function (resolve) {
     state.loading = true;
     if (!state.initialized) {
       getAuth().onAuthStateChanged(async (_user) => {
-        // USER.value = getAuth().currentUser;
-        // console.log('JS USER', getAuth().currentUser);
-        // resolve(currentUser);
-        console.log("_user", _user);
+        console.log("@/composables/firebase-service > getAuth().currentUser", getAuth().currentUser);
+        console.log("@/composables/firebase-service > onAuthStateChanged()", _user);
         if (_user) {
           state.user = _user;
+          if (!state.userData) state.userData = {};
+          if (_user.displayName) state.userData.name = _user.displayName;
+          if (_user.email) state.userData.email = _user.email;
         } else {
           state.user = null;
         }
@@ -180,4 +191,16 @@ export const authCheck = async () => {
       });
     }
   });
+};
+
+export const logout = async () => {
+  console.log("@/composables/firebase-service > logout()");
+
+  await FirebaseAuthentication.signOut();
+  const result = await signOut(auth);
+  state.error = null;
+  state.loading = false;
+  state.user = null;
+  state.userData = null;
+  return result;
 };
