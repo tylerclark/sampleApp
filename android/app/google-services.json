@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "993776523745",
+    "project_id": "umbrella-vet",
+    "storage_bucket": "umbrella-vet.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:993776523745:android:556a61c8656bf124709aa0",
+        "android_client_info": {
+          "package_name": "com.umbrella.vet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "993776523745-8ncmaem6td4sph2phv4v7c6aruldbbk6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.umbrella.vet",
+            "certificate_hash": "53027d6aafc00c437bd149133894564bf4d771e5"
+          }
+        },
+        {
+          "client_id": "993776523745-5rg9cs54n3bn2to9dc4i3d42gden9m20.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDu1gY8bpLkmgvn2wc8srbX7n8a1zpZH6k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "993776523745-5rg9cs54n3bn2to9dc4i3d42gden9m20.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "993776523745-q58btu8jv232up1ts7fidgnf1c820kjk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.umbrella.vet",
+                "app_store_id": "1622284281"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
