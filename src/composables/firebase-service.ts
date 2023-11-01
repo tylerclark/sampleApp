@@ -23,21 +23,13 @@ import {
 
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 
-const app =
-  getApps().length === 0
-    ? initializeApp({
-        apiKey: "AIzaSyCUau57fHwusLPrshfGzz1VuCcKXh6WNHE",
-        authDomain: "app.umbrella.vet",
-        projectId: "umbrella-vet",
-        storageBucket: "umbrella-vet_chat-media",
-        messagingSenderId: "993776523745",
-        appId: "1:993776523745:web:abe8e6e3138ad680709aa0",
-      })
-    : getApps()[0];
-// const db = getFirestore(app);
-// const functions = getFunctions(app);
+const FIREBASE_CONFIG = {};
 
-const getFirebaseAuth = () => {
+const app = getApps().length === 0 ? initializeApp(FIREBASE_CONFIG) : getApps()[0];
+const db = getFirestore(app);
+const functions = getFunctions(app);
+
+export const getFirebaseAuth = () => {
   if (Capacitor.isNativePlatform()) {
     return initializeAuth(getApp(), {
       persistence: indexedDBLocalPersistence,
