@@ -45,14 +45,7 @@ import {
 
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBViTc7v2QNNR4gsGtkH9nR9l7e21FvBBc",
-  authDomain: "app.umbrella.vet",
-  projectId: "umbrellavettest",
-  storageBucket: "umbrellavettest_chat_media",
-  messagingSenderId: "95746765505",
-  appId: "1:95746765505:web:07e06915c6c31494cf1a40",
-};
+const FIREBASE_CONFIG = {};
 
 const app = getApps().length === 0 ? initializeApp(FIREBASE_CONFIG) : getApps()[0];
 const db = getFirestore(app);
