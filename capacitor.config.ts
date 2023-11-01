@@ -1,12 +1,18 @@
-import { CapacitorConfig } from '@capacitor/cli';
+import { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: 'com.staging.umbrella.vet',
-  appName: 'umbrella-app-staging',
-  webDir: 'dist',
+  appId: "com.umbrella.vet",
+  appName: "Umbrella",
+  webDir: "dist",
   server: {
-    androidScheme: 'https'
-  }
+    androidScheme: "https",
+  },
+  plugins: {
+    FirebaseAuthentication: {
+      skipNativeAuth: false,
+      providers: ["apple.com", "google.com"],
+    },
+  },
 };
 
 export default config;

@@ -1,27 +1,22 @@
 <template>
   <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-title>Sample App</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Sample App</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
       <div id="container">
-        <div v-if="!user">Not Authenticated</div>
-        <div v-if="user">
-          <p>Authenticated as {{ user.displayName }}</p>
-        </div>
+        <div style="display: inline-block; width: 200px">
+          <div v-if="!user">Not Authenticated<br />&nbsp;</div>
+          <div v-if="user">
+            Authenticated as
+            <span v-if="user.name">{{ user.name }}</span>
+            <span v-if="!user.name">Unknown</span>
 
-        <div class="ion-margin-top"><ion-button>Login with Google</ion-button></div>
-        <div><ion-button>Login with Apple</ion-button></div>
-        <div><ion-button>Logout</ion-button></div>
+            <div v-if="user.email">({{ user.email }})</div>
+            <div v-if="!user.email">(Unknown)</div>
+          </div>
+
+          <ion-button class="ion-margin-top" :disabled="user" @click="googleSignin">Login with Google</ion-button>
+          <ion-button :disabled="user" @click="appleSignin">Login with Apple</ion-button>
+          <ion-button :disabled="!user" @click="logout">Logout</ion-button>
+        </div>
       </div>
     </ion-content>
   </ion-page>
@@ -29,12 +24,11 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton } from "@ionic/vue";
-import { state, googleSignin, appleSignin } from "@/composables/firebase-service";
+import { IonContent, IonPage, IonButton } from "@ionic/vue";
+import { state, googleSignin, appleSignin, logout } from "@/composables/firebase-service";
 
 const user = computed(() => {
-  console.log("state", state);
-  return state?.user ? state.user : null;
+  return state.userData;
 });
 </script>
 
@@ -48,22 +42,7 @@ const user = computed(() => {
   top: 50%;
   transform: translateY(-50%);
 }
-
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
+ion-button {
+  width: 100%;
 }
 </style>
